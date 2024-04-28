@@ -39,7 +39,7 @@ class FileNode{
                 return this;
             for(int i = 0; i < children.size(); i++){
                 if(children[i]->getType() == NodeType::Directory){ // si es un directorio invocar dfs
-                    FileNode* res = children[i]->dfs(name);
+                    children[i]->dfs(name);
                     
                 }
                 if(children[i]->getName() == name) // si es un archivo y el nombre coincide, retornar el nodo
