@@ -75,6 +75,7 @@ int main() {
     
 
     cout << "Padre de node1: " << node1->getParent()->getName() <<endl;
+    cout << "Padre de file1: " << file1->getParent()->getName() <<endl;
     
 
 
