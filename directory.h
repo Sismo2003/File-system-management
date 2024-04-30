@@ -75,7 +75,14 @@ public:
 
     FileNode* getCurrentDirectory() const { return currentDirectory; }
 
-    void setCurrentDirectory(std::string name) { 
+    void setCurrentDirectory(std::string name) {
+        if (name == "..") {
+            goToParentDirectory(); // Llama a la función para moverse al directorio padre
+            return;
+        } else if (name == "/") {
+            currentDirectory = root; // Mueve al directorio raíz
+            return;
+        }
         FileNode* toReach = currentDirectory->dfs(name); // Buscar el directorio
         if (toReach == nullptr) {
             std::cout << "No se encontró el directorio." << std::endl;
@@ -133,13 +140,39 @@ public:
     }
 
     void getAll() {
-        arreglo_lista<FileNode*> children = currentDirectory->getChildren();
+        arreglo_lista<FileNode*> children = currentDirectory->getChildren(); //Realicé cambios a getAll() para que se mostraran de mejor forma a la hora de usar ls.
+
+        // Arreglos para almacenar nombres de archivos y directorios
+        arreglo_lista<std::string> fileNames;
+        arreglo_lista<std::string> directoryNames;
+
+        // Separar los nombres de archivos y directorios
         for (int i = 0; i < children.size(); i++) {
-            if(children[i]->getType() == NodeType::File){
-                std::cout << "File: " << children[i]->getName() << std::endl;
-            }else{
-                std::cout << "Directory: " << children[i]->getName() << std::endl;
+            if (children[i]->getType() == NodeType::File) {
+                fileNames.push_final(children[i]->getName());
+            } else {
+                directoryNames.push_final(children[i]->getName());
             }
+        }
+
+        // Imprimir archivos y directorios si existen
+        if (fileNames.size() > 0 || directoryNames.size() > 0) {
+            // Imprimir archivos
+            for (int i = 0; i < fileNames.size(); i++) {
+                std::cout << "[File] " << fileNames[i] << std::endl;
+            }
+
+            // Imprimir directorios
+            for (int i = 0; i < directoryNames.size(); i++) {
+                std::cout << "[Directory] " << directoryNames[i] << std::endl;
+            }
+
+            // Mostrar el número total de archivos y directorios
+            std::cout << "Total de archivos: " << fileNames.size() << std::endl;
+            std::cout << "Total de directorios: " << directoryNames.size() << std::endl;
+        } else {
+            // Si no hay archivos ni directorios, imprimir "Directorio vacío"
+            std::cout << "Directorio vacio" << std::endl;
         }
     }
 
