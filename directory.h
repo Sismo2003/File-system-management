@@ -15,16 +15,16 @@ private:
     FileNode* parent = nullptr;
 
 public:
-    FileNode(std::string name, NodeType type) : name{name}, type{type} {}
+    FileNode(std::string name, NodeType type) : name{name}, type{type} {} // Constructor
 
-    std::string getName() const { return name; }
-    NodeType getType() const { return type; }
-    const arreglo_lista<FileNode*>& getChildren() const { return children; }
-    FileNode* getParent() const { return parent; }
-    void setParent(FileNode* parent) { this->parent = parent; }
-    void addChild(FileNode* child) {
-        child->setParent(this);
-        children.push_final(child);
+    std::string getName() const { return name; } // Getter for Name
+    NodeType getType() const { return type; } // Getter for the type of the node
+    const arreglo_lista<FileNode*>& getChildren() const { return children; } // Getter for the array of children's
+    FileNode* getParent() const { return parent; } // Getter for node parent
+    void setParent(FileNode* parent) { this->parent = parent; } // Setter for the node parent
+    void addChild(FileNode* child) { // Setter for the children's
+        child->setParent(this); // set the parent of the child this node
+        children.push_final(child); // push for the array of nodes
     }
 
     FileNode* dfs(std::string name) {
@@ -43,14 +43,14 @@ public:
     }
 
     void setContent(std::string newContent) {
-        content = newContent;
+        content = newContent; // Setter for the content
     }
 
-    std::string getContent() {
+    std::string getContent() { // Getter for the content
         return content;
     }
 
-    ~FileNode() {
+    ~FileNode() { // Destructor
         for (int i = 0; i < children.size(); i++)
             delete children[i];
     }
@@ -142,8 +142,6 @@ public:
             }
         }
     }
-
-
 
 };
 
