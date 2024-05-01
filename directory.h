@@ -136,7 +136,7 @@ public:
                 return children[i]->getContent();
             }
         }
-        return "";
+        return "noSeEncontro";
     }
 
     void getAll() {

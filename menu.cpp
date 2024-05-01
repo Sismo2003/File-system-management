@@ -48,6 +48,7 @@ void printMenu(){
     cout<<"Commandos Disponibles: "<<enl;
     cout<<"* dir + (Directorio) -> Crea un Nuevo directorio."<<enl;
     cout<<"* touch + (Archivo)  -> Crea un Nuevo Archivo."<<enl;
+    cout<<"* nano  + (Archivo)  -> Edita un Archivo."<<enl;
     cout<<"* cd + (Directorio)  -> Cambia de directorio."<<enl;
     cout<<"* cd ..              -> Directorio anterior."<<enl;
     cout<<"* cd /               -> Directorio raiz."<<enl;
@@ -76,6 +77,26 @@ void moveDirectory(Directory* actualDir, string userAnswer){
 
         actualDir->setCurrentDirectory(userAnswer);
     }
+    cls();
+    printMenu();
+}
+
+string editFile (Directory* fileToEdit, string fileName, NodeType type) {
+    if (fileToEdit == nullptr){
+        cout<<"El archivo especificado no existe."<<enl<< endl;
+    } else {
+        string nuevoContenido;
+        string existencia = fileToEdit->getContent(fileName);
+
+        if(existencia == "noSeEncontro"){ return "noSeEncontro"; }
+
+        cout<<"\nContenido del archivo: ";
+        if (existencia == ""){ cout<<"VACIO"<<endl; } else { cout<<existencia<<endl; }
+
+        cout<<"\nNuevo contenido: "; getline(cin, nuevoContenido);
+        fileToEdit->setContent(fileName, nuevoContenido);
+    }
+    return "exito";
     cls();
     printMenu();
 }
@@ -120,6 +141,17 @@ void menu(){
                 printMenu();
                 dir.getAll(); //Eliminé "enl" para que tuviera el mismo espacio de separación de las instrucciones
                 cout<<enl;
+            }
+            else if(vi_userAnswer[0] == "nano"){ // Logica para Moverse de directorio.
+                if(vi_userAnswer.size() == 2) {
+                    string result = editFile(&dir, vi_userAnswer[1], NodeType::File);
+                    cls(); printMenu();
+                    if ( result == "noSeEncontro" ){ cout << "El archivo no se encontro!" << enl << enl; }
+                    else { cout << "Archivo editado con exito!" << enl << enl; }
+
+                } else {
+                    cout << "Faltan parametros!" << enl;
+                }
             }
             else if(vi_userAnswer[0] == "exit"){
                 return;
