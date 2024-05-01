@@ -45,10 +45,10 @@ void newDirectory(Directory* actualDir, string userAnswer,NodeType type){
 void moveDirectory(Directory* actualDir, string userAnswer){
     if (userAnswer == "..") { // Retroceder al directorio padre
         actualDir->goToParentDirectory();
-    } else if (userAnswer == "/") { // Ir al directorio raíz
+    } else if (userAnswer == "/") { // Ir al directorio raï¿½z
         actualDir->setCurrentDirectory("/");
     } else {
-        FileNode* destination = actualDir->findNode(userAnswer); // Buscar el destino, implementé esto porque se podía acceder a un archivo como directorio y de esta forma se evita este error.
+        FileNode* destination = actualDir->findNode(userAnswer); // Buscar el destino, implementï¿½ esto porque se podï¿½a acceder a un archivo como directorio y de esta forma se evita este error.
 
         if (destination->getType() == NodeType::File) {
             cout<<"No se puede acceder a un archivo como directorio."<<enl<< endl;
@@ -60,39 +60,43 @@ void moveDirectory(Directory* actualDir, string userAnswer){
     cls();
 }
 
+void printMenu(){
+    cout<<"Bienvenido al Sistema de Archivos Virtuales"<<enl;
+    //cout<<"Directorio Actual: "<<dir.getCurrentDirectory()->getName()<<enl;
+    cout<<"Commandos Disponibles: "<<enl;
+    cout<<"* dir + (Directorio) -> Crea un Nuevo directorio."<<enl;
+    cout<<"* touch + (Archivo)  -> Crea un Nuevo Archivo."<<enl;
+    cout<<"* cd + (Directorio)  -> Cambia de directorio."<<enl;
+    cout<<"* cd ..              -> Directorio anterior."<<enl;
+    cout<<"* cd /               -> Directorio raiz."<<enl;
+    cout<<"* ls                 -> Lista del Contenido."<<enl;
+    cout<<"* exit               -> Termina el Programa."<<enl;
+    cout<<enl<<enl;
+}
+
 void menu(){
     Directory dir;
     string userAnswer;
+    printMenu();
 
     while (userAnswer != "exit"){
-        cout<<"Bienvenido al Sistema de Archivos Virtuales"<<enl;
-        cout<<"Directorio Actual: "<<dir.getCurrentDirectory()->getName()<<enl;
-        cout<<"Commandos Disponibles: "<<enl;
-        cout<<"* dir + (Directorio) -> Crea un Nuevo directorio."<<enl;
-        cout<<"* touch + (Archivo)  -> Crea un Nuevo Archivo."<<enl;
-        cout<<"* cd + (Directorio)  -> Cambia de directorio."<<enl;
-        cout<<"* cd ..              -> Directorio anterior."<<enl;
-        cout<<"* cd /               -> Directorio raiz."<<enl;
-        cout<<"* ls                 -> Lista del Contenido."<<enl;
-        cout<<"* exit               -> Termina el Programa."<<enl;
-        cout<<enl<<enl;
-
         cout<<"~/"<<dir.getCurrentDirectory()->getName()<<": ";
         getline(cin,userAnswer);
         auto vi_userAnswer = explode(userAnswer, ' ');
-        cls();
         if(vi_userAnswer.size() <= 2){
             if(vi_userAnswer[0] == "dir"){  // logica para crear directorio
-                if(vi_userAnswer.size() == 2) { //Agregué estás líneas, "if(vi_userAnswer.size() == 2)", dentro de las respuestas del usuario para evitar que se cerrara la aplicación
+                if(vi_userAnswer.size() == 2) { //Agreguï¿½ estï¿½s lï¿½neas, "if(vi_userAnswer.size() == 2)", dentro de las respuestas del usuario para evitar que se cerrara la aplicaciï¿½n
                     newDirectory(&dir, vi_userAnswer[1], NodeType::Directory);
+                    printMenu();
                     cout << "Directorio Creado con exito!" << enl << enl;
                 } else {
-                    cout << "Faltan parametros!" << enl;
+                    cout << "Faltan parametros!" << enl<<enl;
                 }
             }
             else if(vi_userAnswer[0] == "touch"){ // Logica para crear Archivo
                 if(vi_userAnswer.size() == 2) {
                     newDirectory(&dir, vi_userAnswer[1], NodeType::File);
+                    printMenu();
                     cout << "Archivo Creado con exito!" << enl << enl;
                 } else {
                     cout << "Faltan parametros!" << enl;
@@ -101,12 +105,15 @@ void menu(){
             else if(vi_userAnswer[0] == "cd"){ // Logica para Moverse de directorio.
                 if(vi_userAnswer.size() == 2) {
                     moveDirectory(&dir, vi_userAnswer[1]);
+                    cls();
+                    printMenu();
                 } else {
                     cout << "Faltan parametros!" << enl;
                 }
             }
             else if(vi_userAnswer[0] == "ls"){ // Logica para mostrar los directorios y archivos
                 cls();
+                printMenu();
                 cout<<enl;dir.getAll();
                 cout<<enl;
             }
@@ -114,10 +121,14 @@ void menu(){
                 return;
             }
             else{
+                cls();
+                printMenu();
                 cout<<"Comando Desconocido!"<<enl;
             }
         }
         else{
+            cls();
+            printMenu();
             cout<<"Parametros exedidos!"<<enl;
         }
 
