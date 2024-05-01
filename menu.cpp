@@ -42,24 +42,6 @@ void newDirectory(Directory* actualDir, string userAnswer,NodeType type){
     cls();
 }
 
-void moveDirectory(Directory* actualDir, string userAnswer){
-    if (userAnswer == "..") { // Retroceder al directorio padre
-        actualDir->goToParentDirectory();
-    } else if (userAnswer == "/") { // Ir al directorio ra�z
-        actualDir->setCurrentDirectory("/");
-    } else {
-        FileNode* destination = actualDir->findNode(userAnswer); // Buscar el destino, implement� esto porque se pod�a acceder a un archivo como directorio y de esta forma se evita este error.
-
-        if (destination->getType() == NodeType::File) {
-            cout<<"No se puede acceder a un archivo como directorio."<<enl<< endl;
-            return;
-        }
-
-        actualDir->setCurrentDirectory(userAnswer);
-    }
-    cls();
-}
-
 void printMenu(){
     cout<<"Bienvenido al Sistema de Archivos Virtuales"<<enl;
     //cout<<"Directorio Actual: "<<dir.getCurrentDirectory()->getName()<<enl;
@@ -72,6 +54,30 @@ void printMenu(){
     cout<<"* ls                 -> Lista del Contenido."<<enl;
     cout<<"* exit               -> Termina el Programa."<<enl;
     cout<<enl<<enl;
+}
+
+
+void moveDirectory(Directory* actualDir, string userAnswer){
+    cls();
+    printMenu();
+    if (userAnswer == "..") { // Retroceder al directorio padre
+        actualDir->goToParentDirectory();
+    } else if (userAnswer == "/") { // Ir al directorio raíz
+        actualDir->setCurrentDirectory("/");
+    } else {
+        FileNode* destination = actualDir->findNode(userAnswer); // Buscar el destino, implement� esto porque se pod�a acceder a un archivo como directorio y de esta forma se evita este error.
+        if (destination == nullptr) { //Agregué esta línea porque si utilizaba cd "algo" sin haber creado antes un directorio este se cerraba
+            cout<<"El directorio especificado no existe."<<enl<< endl;
+            return;
+        } else if (destination->getType() == NodeType::File) {
+            cout<<"No se puede acceder a un archivo como directorio."<<enl<<endl;
+            return;
+        }
+
+        actualDir->setCurrentDirectory(userAnswer);
+    }
+    cls();
+    printMenu();
 }
 
 void menu(){
@@ -105,8 +111,6 @@ void menu(){
             else if(vi_userAnswer[0] == "cd"){ // Logica para Moverse de directorio.
                 if(vi_userAnswer.size() == 2) {
                     moveDirectory(&dir, vi_userAnswer[1]);
-                    cls();
-                    printMenu();
                 } else {
                     cout << "Faltan parametros!" << enl;
                 }
@@ -114,7 +118,7 @@ void menu(){
             else if(vi_userAnswer[0] == "ls"){ // Logica para mostrar los directorios y archivos
                 cls();
                 printMenu();
-                cout<<enl;dir.getAll();
+                dir.getAll(); //Eliminé "enl" para que tuviera el mismo espacio de separación de las instrucciones
                 cout<<enl;
             }
             else if(vi_userAnswer[0] == "exit"){
