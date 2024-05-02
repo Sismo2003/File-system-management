@@ -3,6 +3,8 @@
 
 #include <string>
 #include "arreglo.h"
+#include "pila.h"
+#include "cola.h"
 
 enum class NodeType { File, Directory };
 
@@ -12,6 +14,8 @@ private:
     NodeType type;
     std::string content = "";
     arreglo_lista<FileNode*> children;
+    pila<FileNode*> children_pila;
+    cola<FileNode*> children_cola;
     FileNode* parent = nullptr;
 
 public:
@@ -20,11 +24,50 @@ public:
     std::string getName() const { return name; } // Getter for Name
     NodeType getType() const { return type; } // Getter for the type of the node
     const arreglo_lista<FileNode*>& getChildren() const { return children; } // Getter for the array of children's
+    const pila<FileNode*>& getChildrenPila() const { return children_pila; } // Getter for the stack of children's
+    const cola<FileNode*>& getChildrenCola() const { return children_cola; }   // Getter for the queue of children's
     FileNode* getParent() const { return parent; } // Getter for node parent
     void setParent(FileNode* parent) { this->parent = parent; } // Setter for the node parent
     void addChild(FileNode* child) { // Setter for the children's
         child->setParent(this); // set the parent of the child this node
+        children_cola.encolar(child);   // push for the queue of nodes
         children.push_final(child); // push for the array of nodes
+        children_pila.push(child); // push for the stack of nodes
+    }
+
+    bool deleteChild(std::string name) {
+        for (int i = 0; i < children.size(); i++) {
+            if (children[i]->getName() == name) {
+                pila<FileNode*> children_pila_aux;
+                cola<FileNode*> children_cola_aux;
+
+                while(!children_cola.vacia()){
+                    if(children_cola.frente_cola()->getName() == name){
+                        children_cola.desencolar();
+                    }else{
+                        children_cola_aux.encolar(children_cola.frente_cola());
+                        children_cola.desencolar();
+                    }
+                }
+
+                children_cola = children_cola_aux;
+
+                while(!children_cola_aux.vacia()){
+                    children_pila_aux.push(children_cola_aux.frente_cola());
+                    children_cola_aux.desencolar();
+                }
+
+                children_pila = children_pila_aux;
+
+                delete children[i];
+                children.pop(i);
+
+
+
+                return true;
+            }
+        }
+        return false;
     }
 
     FileNode* dfs(std::string name) {
@@ -173,6 +216,103 @@ public:
         } else {
             // Si no hay archivos ni directorios, imprimir "Directorio vacío"
             std::cout << "Directorio vacio" << std::endl;
+        }
+    }
+
+    void getAllLastest(){
+        pila<FileNode*> childrenPila = currentDirectory->getChildrenPila(); //Realicé cambios a getAll() para que se mostraran de mejor forma a la hora de usar ls.
+
+        // Arreglos para almacenar nombres de archivos y directorios
+        cola<std::string> fileNames;
+        cola<std::string> directoryNames;
+
+        // Separar los nombres de archivos y directorios
+        while(!childrenPila.vacia()){ 
+            if (childrenPila.tope()->getType() == NodeType::File) {
+                fileNames.encolar(childrenPila.tope()->getName());
+                childrenPila.pop();
+            } else {
+                directoryNames.encolar(childrenPila.tope()->getName());
+                childrenPila.pop();
+            }
+        }
+
+        int totalFiles = fileNames.size();
+        int totalDirectories = directoryNames.size();
+
+        // Imprimir archivos y directorios si existen
+        if (fileNames.size() > 0 || directoryNames.size() > 0) {
+            // Imprimir archivos
+            while(!fileNames.vacia()){
+                std::cout << "[File] " << fileNames.frente_cola() << std::endl;
+                fileNames.desencolar();
+            }
+
+            // Imprimir directorios
+            while(!directoryNames.vacia()){
+                std::cout << "[Directory] " << directoryNames.frente_cola() << std::endl;
+                directoryNames.desencolar();
+            }
+
+            // Mostrar el número total de archivos y directorios
+            std::cout << "Total de archivos: " << totalFiles << std::endl;
+            std::cout << "Total de directorios: " << totalDirectories << std::endl;
+        } else {
+            // Si no hay archivos ni directorios, imprimir "Directorio vacío"
+            std::cout << "Directorio vacio" << std::endl;
+        }
+    }
+
+    void getAllOldest(){
+        cola<FileNode*> childrenCola = currentDirectory->getChildrenCola(); //Realicé cambios a getAll() para que se mostraran de mejor forma a la hora de usar ls.
+
+        // Arreglos para almacenar nombres de archivos y directorios
+        cola<std::string> fileNames;
+        cola<std::string> directoryNames;
+
+        // Separar los nombres de archivos y directorios
+        while(!childrenCola.vacia()){ 
+            if (childrenCola.frente_cola()->getType() == NodeType::File) {
+                fileNames.encolar(childrenCola.frente_cola()->getName());
+                childrenCola.desencolar();
+            } else {
+                directoryNames.encolar(childrenCola.frente_cola()->getName());
+                childrenCola.desencolar();
+            }
+        }
+
+        int totalFiles = fileNames.size();
+        int totalDirectories = directoryNames.size();
+
+        // Imprimir archivos y directorios si existen
+        if (fileNames.size() > 0 || directoryNames.size() > 0) {
+            // Imprimir archivos
+            while(!fileNames.vacia()){
+                std::cout << "[File] " << fileNames.frente_cola() << std::endl;
+                fileNames.desencolar();
+            }
+
+            // Imprimir directorios
+            while(!directoryNames.vacia()){
+                std::cout << "[Directory] " << directoryNames.frente_cola() << std::endl;
+                directoryNames.desencolar();
+            }
+
+            // Mostrar el número total de archivos y directorios
+            std::cout << "Total de archivos: " << totalFiles << std::endl;
+            std::cout << "Total de directorios: " << totalDirectories << std::endl;
+        } else {
+            // Si no hay archivos ni directorios, imprimir "Directorio vacío"
+            std::cout << "Directorio vacio" << std::endl;
+        }
+    
+    }
+
+    bool deleteNode(std::string name) {
+        if (currentDirectory->deleteChild(name)) {
+            return true;
+        } else {
+            return false;
         }
     }
 

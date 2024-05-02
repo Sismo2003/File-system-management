@@ -35,16 +35,16 @@ public:
 
     arreglo_lista &operator=(const arreglo_lista &rhs) {
         arreglo_lista copia = rhs;
-        swap(cap, copia.cap);
-        swap(i, copia.i);
-        swap(arr, copia.arr);
+        std::swap(cap, copia.cap);
+        std::swap(i, copia.i);
+        std::swap(arr, copia.arr);
         return *this;
     }
 
     arreglo_lista &operator=(arreglo_lista &&rhs) {
-        swap(cap, rhs.cap);
-        swap(i, rhs.i);
-        swap(arr, rhs.arr);
+        std::swap(cap, rhs.cap);
+        std::swap(i, rhs.i);
+        std::swap(arr, rhs.arr);
         return *this;
     }
 

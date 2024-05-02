@@ -1,90 +1,108 @@
 #ifndef COLA_H
 #define COLA_H
 
-#include <exception>
-#include <string>
-using namespace std;
-class QueueException : public exception{
-    private:
-        string msg;
-    public:
-        explicit QueueException(const char* message) : msg(message){}
-        explicit QueueException(const string& message) : msg(message){}
-        virtual ~QueueException() throw () {}
-        virtual const char* what() const throw() {
-            return msg.c_str();
-        }
-};
+#include <iostream>
+#include <utility>
 
-//cola modelo circular
-template <class T, int TAMANIO=1024>
-class Cola
-{
+#define capacidad_cola 10
+
+template <typename objeto>
+class cola {
 private:
-    T arr[TAMANIO];
-    int frontPos;
-    int endPos;
-
-    void copyAll(const Cola<T, TAMANIO>& q){
-        frontPos = q.frontPos;
-        endPos = q.endPos;
-        for (int i=frontPos; i!=(endPos + 1) % TAMANIO; i = (i + 1) % TAMANIO) {
-            arr[i] = q.arr[i];
-        }
-    };
+    int frente, final;
+    int cap;
+    objeto* arr;
 
 public:
-    Cola(){
-        frontPos=0;
-        endPos=TAMANIO-1;
-    };
-    Cola(const Cola<T, TAMANIO>& q){
-        copyAll(q);
-    };
+    explicit cola(int tam) : frente{0}, final{0}, cap{tam + capacidad_cola}, arr{new objeto[cap]} {}
 
-    bool isEmpty(){
-        return frontPos==endPos+1 || (frontPos==0 && endPos==TAMANIO-1);
-    };
-    bool isFull(){
-        return frontPos==endPos+2
-        || (frontPos==0 && endPos==TAMANIO-2)|| (frontPos==1 && endPos==TAMANIO-1);
-        };
+    cola(const cola &rhs) : frente{rhs.frente}, final{rhs.final}, cap{rhs.cap}, arr{new objeto[cap]} {
+        for (int k = frente; k != final; k = (k + 1) % cap)
+            arr[k] = rhs.arr[k];
+    }
 
-    void enqueue(const T& e){
-        if(isFull()){
-            throw QueueException("Desbordamiento de datos enqueue");
-        }
-        if(++endPos==TAMANIO){
-            endPos=0;
-        }
-        arr[endPos]=e;
-    };
+    cola(cola &&rhs) : frente{rhs.frente}, final{rhs.final}, cap{rhs.cap}, arr{rhs.arr} {
+        rhs.frente = 0;
+        rhs.final = 0;
+        rhs.cap = 0;
+        rhs.arr = nullptr;
+    }
 
-    T dequeue(){
-        if(isEmpty()){
-            throw QueueException("Insuficiencia de datos, dequeue");
-        }
+    cola() : frente{0}, final{0}, cap{capacidad_cola}, arr{new objeto[capacidad_cola]} {}
 
-         T result(arr[frontPos]);
-        if(++frontPos==TAMANIO){
-            frontPos=0;
-        }
-        return result;
-    };
-    T getFront(){
-        if(isEmpty()){
-            throw QueueException("Insuficiencia de datos, getFront");
-        }
-        return arr[frontPos];
-    };
+    ~cola() {
+        delete[] arr;
+    }
 
-    Cola<T, TAMANIO>& operator = (const Cola<T, TAMANIO>& q){
-        copyAll(q);
+    cola &operator=(const cola &rhs) {
+        cola copia = rhs;
+        std::swap(cap, copia.cap);
+        std::swap(frente, copia.frente);
+        std::swap(final, copia.final);
+        std::swap(arr, copia.arr);
         return *this;
-    };
+    }
 
+    cola &operator=(cola &&rhs) {
+        std::swap(cap, rhs.cap);
+        std::swap(frente, rhs.frente);
+        std::swap(final, rhs.final);
+        std::swap(arr, rhs.arr);
+        return *this;
+    }
 
+    void encolar(const objeto &rhs) {
+        if ((final + 1) % cap == frente)
+            reservar(cap + 1); // invocar metodo para aumentar el espacio
+        arr[final] = rhs;
+        final = (final + 1) % cap;
+    }
 
+    void encolar(objeto &&rhs) {
+        if ((final + 1) % cap == frente)
+            reservar(cap + 1); // invocar metodo para aumentar el espacio
+        arr[final] = std::move(rhs);
+        final = (final + 1) % cap;
+    }
+
+    void desencolar() {
+        if (!vacia()) // metodo
+            frente = (frente + 1) % cap;
+    }
+
+    objeto &frente_cola() {
+        if (!vacia())
+            return arr[frente];
+        throw std::runtime_error("Cola vacía");
+    }
+
+    const objeto &frente_cola() const {
+        if (!vacia())
+            return arr[frente];
+        throw std::runtime_error("Cola vacía");
+    }
+
+    bool vacia() const {
+        return frente == final;
+    }
+
+    int size() const {
+        return (final - frente + cap) % cap;
+    }
+
+    void reservar(int nueva_capacidad) {
+        objeto* nuevo_arr = new objeto[nueva_capacidad];
+        int j = 0;
+        for (int k = frente; k != final; k = (k + 1) % cap) {
+            nuevo_arr[j] = std::move(arr[k]);
+            j++;
+        }
+        delete[] arr;
+        arr = nuevo_arr;
+        frente = 0;
+        final = j;
+        cap = nueva_capacidad;
+    }
 };
 
 #endif // COLA_H

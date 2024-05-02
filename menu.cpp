@@ -14,7 +14,7 @@ void cls(){
 #endif
 }
 
-vector<string> explode(string val, char delim ){
+vector<string> explode(string val, char delim ){ // funcion para tomar la palabra clave del comando 
     vector<string> result;
     string temp_result = "";
     bool flag = false;
@@ -48,7 +48,8 @@ void printMenu(){
     cout<<"Commandos Disponibles: "<<enl;
     cout<<"* dir + (Directorio) -> Crea un Nuevo directorio."<<enl;
     cout<<"* touch + (Archivo)  -> Crea un Nuevo Archivo."<<enl;
-    cout<<"* nano  + (Archivo)  -> Edita un Archivo."<<enl;
+    cout<<"* delete + (Archivo o Directorio)  -> Elimina un Archivo o Directorio."<<enl;
+    cout<<"* nano + (Archivo)   -> Editar un Archivo."<<enl;        
     cout<<"* cd + (Directorio)  -> Cambia de directorio."<<enl;
     cout<<"* cd ..              -> Directorio anterior."<<enl;
     cout<<"* cd /               -> Directorio raiz."<<enl;
@@ -117,7 +118,7 @@ void menu(){
                     printMenu();
                     cout << "Directorio Creado con exito!" << enl << enl;
                 } else {
-                    cout << "Faltan parametros!" << enl<<enl;
+                    cout << "Faltan parametros!" << enl << enl;
                 }
             }
             else if(vi_userAnswer[0] == "touch"){ // Logica para crear Archivo
@@ -137,10 +138,32 @@ void menu(){
                 }
             }
             else if(vi_userAnswer[0] == "ls"){ // Logica para mostrar los directorios y archivos
-                cls();
-                printMenu();
-                dir.getAll(); //Eliminé "enl" para que tuviera el mismo espacio de separación de las instrucciones
-                cout<<enl;
+                int option = 0;
+                cout<<"Opcion 1: Mostrar por default\nOpcion 2: Mostrar de antiguo a nuevo\nOpcion 3: Mostrar de nuevo a antiguo\n" << enl;
+
+                cout<<"Ingrese una opcion: ";
+                cin >> option;
+                cin.ignore();
+                if(option == 1){
+                    cls();
+                    printMenu();
+                    dir.getAll();
+                    cout<<enl;
+                }else if(option == 2){
+                    cls();
+                    printMenu();
+                    dir.getAllOldest();
+                    cout<<enl;
+                }else if(option == 3){
+                    cls();
+                    printMenu();
+                    dir.getAllLastest();
+                    cout<<enl;
+                }else{
+                    cls();
+                    printMenu();
+                    cout<<"Opcion no valida!"<<enl;
+                }
             }
             else if(vi_userAnswer[0] == "nano"){ // Logica para Moverse de directorio.
                 if(vi_userAnswer.size() == 2) {
@@ -155,6 +178,18 @@ void menu(){
             }
             else if(vi_userAnswer[0] == "exit"){
                 return;
+            }
+            else if(vi_userAnswer[0] == "delete"){ // Logica para eliminar directorio o archivo
+                cls();  
+                if(vi_userAnswer.size() == 2) {
+                    if(dir.deleteNode(vi_userAnswer[1])){
+                        printMenu();
+                        cout<<"Archivo o Directorio Eliminado con exito!"<<enl<<enl;
+                    }
+                    
+                } else {
+                    cout << "Faltan parametros!" << enl;
+                }
             }
             else{
                 cls();
