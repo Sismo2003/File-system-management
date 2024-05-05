@@ -7,9 +7,11 @@
 #include "cola.h"
 
 enum class NodeType { File, Directory };
+static int idIncremental;
 
 class FileNode {
 private:
+    int id;
     std::string name;
     NodeType type;
     std::string content = "";
@@ -19,8 +21,10 @@ private:
     FileNode* parent = nullptr;
 
 public:
-    FileNode(std::string name, NodeType type) : name{name}, type{type} {} // Constructor
+    FileNode(std::string name, NodeType type) : name{name}, type{type}, id {idIncremental++} {} // Constructor
 
+    int getId () { return id; }
+    void setId (int nuevoId) { id = nuevoId; }
     std::string getName() const { return name; } // Getter for Name
     NodeType getType() const { return type; } // Getter for the type of the node
     const arreglo_lista<FileNode*>& getChildren() const { return children; } // Getter for the array of children's
@@ -92,6 +96,26 @@ public:
     std::string getContent() { // Getter for the content
         return content;
     }
+
+    FileNode* busquedaBinariaChildrenId(arreglo_lista<FileNode*>& children, int id_a_encontrar, int abajo, int arriba) {
+        if (abajo > arriba) {
+            return nullptr; 
+        }
+
+        int medio = abajo + (arriba - abajo) / 2; 
+
+        if (children[medio]->getId() == id_a_encontrar) {
+            return children[medio];
+        }
+        else if (children[medio]->getId() > id) {
+            return busquedaBinariaChildrenId(children, id_a_encontrar, abajo, medio - 1);
+        }
+        else {
+            return busquedaBinariaChildrenId(children, id_a_encontrar, medio + 1, arriba);
+        }
+    }
+
+
 
     ~FileNode() { // Destructor
         for (int i = 0; i < children.size(); i++)

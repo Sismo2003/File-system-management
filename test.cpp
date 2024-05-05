@@ -45,8 +45,15 @@ using namespace std;
     else
         cout << "No se encontró el nodo" << endl;
 
-    
 
+    cout<<"HIJOS CHILDREN"<<endl; 
+    arreglo_lista<FileNode *> children = dir.getRoot()->getChildren();
+    for (FileNode* child : children) {
+            cout<<child->getId()<<endl;
+    }
+    
+    FileNode* f = dir.getRoot()->busquedaBinariaChildrenId(children, 2, 0, children.size());
+    if ( f != nullptr ) { cout<<"Se encontro: "<<f->getId()<<endl; } else { cout<<"No se encontro"<<endl; }
 
     return EXIT_SUCCESS;
 }
