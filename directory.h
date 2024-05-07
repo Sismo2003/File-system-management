@@ -6,104 +6,106 @@
 #include "pila.h"
 #include "cola.h"
 
-enum class NodeType { File, Directory };
-static int idIncremental;
+enum class NodeType { File, Directory }; // Enumeración para representar el tipo de nodo: Archivo o Directorio
+static int idIncremental; // Variable estática para mantener un ID incremental para los nodos
 
 class FileNode {
 private:
-    int id;
-    std::string name;
-    NodeType type;
-    std::string content = "";
-    arreglo_lista<FileNode*> children;
-    pila<FileNode*> children_pila;
-    cola<FileNode*> children_cola;
-    FileNode* parent = nullptr;
+    int id; // Identificador único del nodo
+    std::string name; // Nombre del nodo
+    NodeType type; // Tipo del nodo (Archivo o Directorio)
+    std::string content = ""; // Contenido del archivo (solo válido si el nodo es un archivo)
+    arreglo_lista<FileNode*> children; // Arreglo dinámico para almacenar los hijos del nodo (archivos o directorios)
+    pila<FileNode*> children_pila; // Pila para almacenar los hijos del nodo (archivos o directorios)
+    cola<FileNode*> children_cola; // Cola para almacenar los hijos del nodo (archivos o directorios)
+    FileNode* parent = nullptr; // Puntero al nodo padre (null si es el nodo raíz)
 
 public:
-    FileNode(std::string name, NodeType type) : name{name}, type{type}, id {idIncremental++} {} // Constructor
+    // Constructor: Crea un nuevo nodo con el nombre y tipo especificados
+    FileNode(std::string name, NodeType type) : name{name}, type{type}, id {idIncremental++} {}
 
+    // Método para obtener el ID del nodo
     int getId () { return id; }
+
+    // Método para establecer el ID del nodo
     void setId (int nuevoId) { id = nuevoId; }
-    std::string getName() const { return name; } // Getter for Name
-    NodeType getType() const { return type; } // Getter for the type of the node
-    const arreglo_lista<FileNode*>& getChildren() const { return children; } // Getter for the array of children's
-    const pila<FileNode*>& getChildrenPila() const { return children_pila; } // Getter for the stack of children's
-    const cola<FileNode*>& getChildrenCola() const { return children_cola; }   // Getter for the queue of children's
-    FileNode* getParent() const { return parent; } // Getter for node parent
-    void setParent(FileNode* parent) { this->parent = parent; } // Setter for the node parent
-    void addChild(FileNode* child) { // Setter for the children's
-        child->setParent(this); // set the parent of the child this node
-        children_cola.encolar(child);   // push for the queue of nodes
-        children.push_final(child); // push for the array of nodes
-        children_pila.push(child); // push for the stack of nodes
+
+    // Método para obtener el nombre del nodo
+    std::string getName() const { return name; }
+
+    // Método para obtener el tipo del nodo (Archivo o Directorio)
+    NodeType getType() const { return type; }
+
+    // Método para obtener los hijos del nodo como un arreglo
+    const arreglo_lista<FileNode*>& getChildren() const { return children; }
+
+    // Método para obtener los hijos del nodo como una pila
+    const pila<FileNode*>& getChildrenPila() const { return children_pila; }
+
+    // Método para obtener los hijos del nodo como una cola
+    const cola<FileNode*>& getChildrenCola() const { return children_cola; }
+
+    // Método para obtener el nodo padre
+    FileNode* getParent() const { return parent; }
+
+    // Método para establecer el nodo padre
+    void setParent(FileNode* parent) { this->parent = parent; }
+
+    // Método para agregar un hijo al nodo
+    void addChild(FileNode* child) {
+        child->setParent(this); // Establecer este nodo como el padre del hijo
+        children_cola.encolar(child); // Agregar el hijo a la cola de nodos hijos
+        children.push_final(child); // Agregar el hijo al arreglo de nodos hijos
+        children_pila.push(child); // Agregar el hijo a la pila de nodos hijos
     }
 
+    // Método para eliminar un hijo del nodo por su nombre
     bool deleteChild(std::string name) {
         for (int i = 0; i < children.size(); i++) {
             if (children[i]->getName() == name) {
-                pila<FileNode*> children_pila_aux;
-                cola<FileNode*> children_cola_aux;
-
-                while(!children_cola.vacia()){
-                    if(children_cola.frente_cola()->getName() == name){
-                        children_cola.desencolar();
-                    }else{
-                        children_cola_aux.encolar(children_cola.frente_cola());
-                        children_cola.desencolar();
-                    }
-                }
-
-                children_cola = children_cola_aux;
-
-                while(!children_cola_aux.vacia()){
-                    children_pila_aux.push(children_cola_aux.frente_cola());
-                    children_cola_aux.desencolar();
-                }
-
-                children_pila = children_pila_aux;
-
+                // Eliminar el hijo del arreglo de nodos hijos
                 delete children[i];
                 children.pop(i);
-
-
-
                 return true;
             }
         }
-        return false;
+        return false; // Devolver falso si el hijo no se encuentra
     }
 
+    // Método para realizar una búsqueda en profundidad (DFS) de un nodo por su nombre
     FileNode* dfs(std::string name) {
-        if (this->name == name)
+        if (this->name == name) // Si el nombre coincide con el nodo actual, devolver este nodo
             return this;
         for (int i = 0; i < children.size(); i++) {
+            // Realizar una búsqueda en profundidad en cada hijo (si es un directorio)
             if (children[i]->getType() == NodeType::Directory) {
                 FileNode* ans = children[i]->dfs(name);
                 if (ans != nullptr)
-                    return ans;
+                    return ans; // Devolver el nodo si se encuentra
             }
+            // Si el nombre coincide con el de algún hijo, devolver ese hijo
             if (children[i]->getName() == name)
                 return children[i];
         }
-        return nullptr;
+        return nullptr; // Devolver nulo si el nodo no se encuentra
     }
 
+    // Método para establecer el contenido del nodo (solo válido si el nodo es un archivo)
     void setContent(std::string newContent) {
-        content = newContent; // Setter for the content
+        content = newContent;
     }
 
-    std::string getContent() { // Getter for the content
+    // Método para obtener el contenido del nodo (solo válido si el nodo es un archivo)
+    std::string getContent() {
         return content;
     }
 
+    // Método para realizar una búsqueda binaria de un nodo por su ID en el arreglo de nodos hijos
     FileNode* busquedaBinariaChildrenId(arreglo_lista<FileNode*>& children, int id_a_encontrar, int abajo, int arriba) {
         if (abajo > arriba) {
             return nullptr;
         }
-
         int medio = abajo + (arriba - abajo) / 2;
-
         if (children[medio]->getId() == id_a_encontrar) {
             return children[medio];
         }
@@ -115,9 +117,8 @@ public:
         }
     }
 
-
-
-    ~FileNode() { // Destructor
+    // Destructor: Liberar la memoria asignada para los nodos hijos
+    ~FileNode() {
         for (int i = 0; i < children.size(); i++)
             delete children[i];
     }
@@ -125,29 +126,34 @@ public:
 
 class Directory {
 private:
-    FileNode* root;
-    FileNode* currentDirectory; // Nodo que representa el directorio actual
+    FileNode* root; // Puntero al nodo raíz del directorio
+    FileNode* currentDirectory; // Puntero al nodo que representa el directorio actual
 
 public:
+    // Constructor: Crear un nuevo directorio con un nodo raíz predeterminado
     Directory() {
         root = new FileNode("root", NodeType::Directory);
         currentDirectory = root; // Al inicio, el directorio actual es el directorio raíz
     }
 
+    // Destructor: Liberar la memoria asignada para el nodo raíz
     ~Directory() {
         delete root;
     }
 
+    // Método para obtener el nodo raíz del directorio
     FileNode* getRoot() const { return root; }
 
+    // Método para obtener el nodo que representa el directorio actual
     FileNode* getCurrentDirectory() const { return currentDirectory; }
 
+    // Método para establecer el nodo que representa el directorio actual por su nombre
     void setCurrentDirectory(std::string name) {
         if (name == "..") {
-            goToParentDirectory(); // Llama a la función para moverse al directorio padre
+            goToParentDirectory(); // Moverse al directorio padre
             return;
         } else if (name == "/") {
-            currentDirectory = root; // Mueve al directorio raíz
+            currentDirectory = root; // Moverse al directorio raíz
             return;
         }
         FileNode* toReach = currentDirectory->dfs(name); // Buscar el directorio
@@ -158,34 +164,38 @@ public:
         currentDirectory = toReach ;
     }
 
+    // Método para moverse al directorio padre
     void goToParentDirectory() {
         if (currentDirectory->getParent() != nullptr) {
-            currentDirectory = currentDirectory->getParent(); // Regresar al directorio anterior
+            currentDirectory = currentDirectory->getParent();
         } else {
             std::cout << "No hay directorio anterior." << std::endl;
         }
     }
 
+    // Método para buscar un nodo por su nombre en todos los directorios
     FileNode* findNodeInAll(std::string name) {
-        return root->dfs(name); // Busca en todos los directorios
+        return root->dfs(name);
     }
 
+    // Método para buscar un nodo por su nombre en el directorio actual
     FileNode* findNode(std::string name) {
-        return currentDirectory->dfs(name); // Busca en el directorio actual
+        return currentDirectory->dfs(name);
     }
 
+    // Método para crear un nuevo archivo en el directorio actual
     void createFile(std::string name) {
         FileNode* newNode = new FileNode(name, NodeType::File);
         currentDirectory->addChild(newNode);
     }
 
+    // Método para crear un nuevo directorio en el directorio actual
     void createDirectory(std::string name) {
         FileNode* newNode = new FileNode(name, NodeType::Directory);
         currentDirectory->addChild(newNode);
     }
 
-
-
+    // Método para establecer el contenido de un archivo en el directorio actual
     void setContent(std::string fileName, std::string newContent) {
         arreglo_lista<FileNode*> children = currentDirectory->getChildren();
         for (int i = 0; i < children.size(); i++) {
@@ -196,6 +206,7 @@ public:
         }
     }
 
+    // Método para obtener el contenido de un archivo en el directorio actual
     std::string getContent(std::string fileName) {
         arreglo_lista<FileNode*> children = currentDirectory->getChildren();
         for (int i = 0; i < children.size(); i++) {
@@ -206,8 +217,9 @@ public:
         return "noSeEncontro";
     }
 
+    // Método para obtener y mostrar todos los archivos y directorios en el directorio actual
     void getAll() {
-        arreglo_lista<FileNode*> children = currentDirectory->getChildren(); //Realicé cambios a getAll() para que se mostraran de mejor forma a la hora de usar ls.
+        arreglo_lista<FileNode*> children = currentDirectory->getChildren(); // Obtener los hijos del directorio actual
 
         // Arreglos para almacenar nombres de archivos y directorios
         arreglo_lista<std::string> fileNames;
@@ -228,12 +240,10 @@ public:
             for (int i = 0; i < fileNames.size(); i++) {
                 std::cout << "[File] " << fileNames[i] << std::endl;
             }
-
             // Imprimir directorios
             for (int i = 0; i < directoryNames.size(); i++) {
                 std::cout << "[Directory] " << directoryNames[i] << std::endl;
             }
-
             // Mostrar el número total de archivos y directorios
             std::cout << "Total de archivos: " << fileNames.size() << std::endl;
             std::cout << "Total de directorios: " << directoryNames.size() << std::endl;
@@ -243,10 +253,11 @@ public:
         }
     }
 
+    // Método para obtener y mostrar todos los archivos y directorios en el directorio actual, en orden inverso de creación
     void getAllLastest(){
-        pila<FileNode*> childrenPila = currentDirectory->getChildrenPila(); //Realicé cambios a getAll() para que se mostraran de mejor forma a la hora de usar ls.
+        pila<FileNode*> childrenPila = currentDirectory->getChildrenPila(); // Obtener los hijos del directorio actual en una pila
 
-        // Arreglos para almacenar nombres de archivos y directorios
+        // Colas para almacenar nombres de archivos y directorios
         cola<std::string> fileNames;
         cola<std::string> directoryNames;
 
@@ -271,13 +282,11 @@ public:
                 std::cout << "[File] " << fileNames.frente_cola() << std::endl;
                 fileNames.desencolar();
             }
-
             // Imprimir directorios
             while(!directoryNames.vacia()){
                 std::cout << "[Directory] " << directoryNames.frente_cola() << std::endl;
                 directoryNames.desencolar();
             }
-
             // Mostrar el número total de archivos y directorios
             std::cout << "Total de archivos: " << totalFiles << std::endl;
             std::cout << "Total de directorios: " << totalDirectories << std::endl;
@@ -287,10 +296,11 @@ public:
         }
     }
 
+    // Método para obtener y mostrar todos los archivos y directorios en el directorio actual, en orden de creación
     void getAllOldest(){
-        cola<FileNode*> childrenCola = currentDirectory->getChildrenCola(); //Realicé cambios a getAll() para que se mostraran de mejor forma a la hora de usar ls.
+        cola<FileNode*> childrenCola = currentDirectory->getChildrenCola(); // Obtener los hijos del directorio actual en una cola
 
-        // Arreglos para almacenar nombres de archivos y directorios
+        // Colas para almacenar nombres de archivos y directorios
         cola<std::string> fileNames;
         cola<std::string> directoryNames;
 
@@ -315,13 +325,11 @@ public:
                 std::cout << "[File] " << fileNames.frente_cola() << std::endl;
                 fileNames.desencolar();
             }
-
             // Imprimir directorios
             while(!directoryNames.vacia()){
                 std::cout << "[Directory] " << directoryNames.frente_cola() << std::endl;
                 directoryNames.desencolar();
             }
-
             // Mostrar el número total de archivos y directorios
             std::cout << "Total de archivos: " << totalFiles << std::endl;
             std::cout << "Total de directorios: " << totalDirectories << std::endl;
@@ -332,6 +340,7 @@ public:
 
     }
 
+    // Método para eliminar un nodo del directorio actual por su nombre
     bool deleteNode(std::string name) {
         if (currentDirectory->deleteChild(name)) {
             return true;
@@ -340,13 +349,14 @@ public:
         }
     }
 
+    // Método para ordenar los nodos del directorio actual por su ID utilizando el algoritmo QuickSort
     void sortDataQuick(const int& leftEdge, const int& rightEdge, arreglo_lista<FileNode*>&data){
-        //criterio de paro
+        // Criterio de paro
         if(leftEdge>= rightEdge){
             return;
         }
 
-        //separacion
+        // Separación
         int i=leftEdge;
         int j=rightEdge;
 
@@ -354,11 +364,9 @@ public:
             while(i<j && data[i]->getId() <= data[rightEdge]->getId()){
                 i++;
             }
-
             while(i<j && data[j]->getId() >= data[rightEdge]->getId()){
                 j--;
             }
-
             if(i != j){
                 std::swap(data[i],data[j]);
             }
@@ -368,14 +376,10 @@ public:
             std::swap(data[i],data[rightEdge]);
         }
 
-        //llamadas recursivas
+        // Llamadas recursivas
         sortDataQuick(leftEdge, i-1,data);
         sortDataQuick(i+1, rightEdge,data);
-
     }
-
-
-
 };
 
 #endif /* DIRECTORY_H */
