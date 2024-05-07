@@ -99,10 +99,10 @@ public:
 
     FileNode* busquedaBinariaChildrenId(arreglo_lista<FileNode*>& children, int id_a_encontrar, int abajo, int arriba) {
         if (abajo > arriba) {
-            return nullptr; 
+            return nullptr;
         }
 
-        int medio = abajo + (arriba - abajo) / 2; 
+        int medio = abajo + (arriba - abajo) / 2;
 
         if (children[medio]->getId() == id_a_encontrar) {
             return children[medio];
@@ -251,7 +251,7 @@ public:
         cola<std::string> directoryNames;
 
         // Separar los nombres de archivos y directorios
-        while(!childrenPila.vacia()){ 
+        while(!childrenPila.vacia()){
             if (childrenPila.tope()->getType() == NodeType::File) {
                 fileNames.encolar(childrenPila.tope()->getName());
                 childrenPila.pop();
@@ -295,7 +295,7 @@ public:
         cola<std::string> directoryNames;
 
         // Separar los nombres de archivos y directorios
-        while(!childrenCola.vacia()){ 
+        while(!childrenCola.vacia()){
             if (childrenCola.frente_cola()->getType() == NodeType::File) {
                 fileNames.encolar(childrenCola.frente_cola()->getName());
                 childrenCola.desencolar();
@@ -329,7 +329,7 @@ public:
             // Si no hay archivos ni directorios, imprimir "Directorio vacío"
             std::cout << "Directorio vacio" << std::endl;
         }
-    
+
     }
 
     bool deleteNode(std::string name) {
@@ -339,6 +339,42 @@ public:
             return false;
         }
     }
+
+    void sortDataQuick(const int& leftEdge, const int& rightEdge, arreglo_lista<FileNode*>&data){
+        //criterio de paro
+        if(leftEdge>= rightEdge){
+            return;
+        }
+
+        //separacion
+        int i=leftEdge;
+        int j=rightEdge;
+
+        while(i<j){
+            while(i<j && data[i]->getId() <= data[rightEdge]->getId()){
+                i++;
+            }
+
+            while(i<j && data[j]->getId() >= data[rightEdge]->getId()){
+                j--;
+            }
+
+            if(i != j){
+                std::swap(data[i],data[j]);
+            }
+        }
+
+        if(i != rightEdge){
+            std::swap(data[i],data[rightEdge]);
+        }
+
+        //llamadas recursivas
+        sortDataQuick(leftEdge, i-1,data);
+        sortDataQuick(i+1, rightEdge,data);
+
+    }
+
+
 
 };
 
