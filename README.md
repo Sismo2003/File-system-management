@@ -20,3 +20,8 @@
 - Representación de la relación entre archivos y directorios utilizando grafos.
 - Implementación de grafos utilizando matriz de adyacencia y lista de adyacencia para explorar las relaciones entre archivos y directorios.
 - Implementación de algoritmos de búsqueda en profundidad y búsqueda en amplitud para explorar la estructura de directorios y archivos.
+
+## Puntos para cada entrega 
+### Primera Entrega
+Fundamentos de estructuras de datos y almacenamiento secundario:Implementación de estructuras básicas de datos estáticas: Lista, Pila y Cola.Creación de un sistema de archivos simple que permita la creación, apertura, escritura y cierre de archivos.Desarrollo de operaciones básicas sobre archivos y directorios: crear, abrir, leer y eliminar.Implementación de contenedores de datos para almacenar información sobre archivos y directorios.Entrega:
+Código fuente de las estructuras de datos estáticas y el sistema de archivos.Funcionalidades básicas para la gestión de archivos y directorios.Documentación inicial sobre el diseño de las estructuras y el funcionamiento básico del sistema.
