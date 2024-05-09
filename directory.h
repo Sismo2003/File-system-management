@@ -7,11 +7,11 @@
 #include "cola.h"
 
 enum class NodeType { File, Directory }; // Enumeración para representar el tipo de nodo: Archivo o Directorio
-static int idIncremental; // Variable estática para mantener un ID incremental para los nodos
+static int idIncremental = 1; // Variable estática para mantener un ID incremental para los nodos
 
 class FileNode {
-private:
-    int id; // Identificador único del nodo
+private: 
+    int id; // ID del nodo
     std::string name; // Nombre del nodo
     NodeType type; // Tipo del nodo (Archivo o Directorio)
     std::string content = ""; // Contenido del archivo (solo válido si el nodo es un archivo)
@@ -22,13 +22,10 @@ private:
 
 public:
     // Constructor: Crea un nuevo nodo con el nombre y tipo especificados
-    FileNode(std::string name, NodeType type) : name{name}, type{type}, id {idIncremental++} {}
+    FileNode(std::string name, NodeType type) : name{name}, type{type} { id = idIncremental++; }
 
     // Método para obtener el ID del nodo
-    int getId () { return id; }
-
-    // Método para establecer el ID del nodo
-    void setId (int nuevoId) { id = nuevoId; }
+    int getId() { return id; }
 
     // Método para obtener el nombre del nodo
     std::string getName() const { return name; }
@@ -36,8 +33,45 @@ public:
     // Método para obtener el tipo del nodo (Archivo o Directorio)
     NodeType getType() const { return type; }
 
+    // Método para ordenar los nodos hijos por nombre
+    void sortChildrenByName() {
+        std::sort(children.begin(), children.end(), [](FileNode* a, FileNode* b) {
+            return a->getName() < b->getName();
+        });
+    }
+
+    void sortDataQuick(const int& leftEdge, const int& rightEdge, arreglo_lista<FileNode*>&data){
+        // Criterio de paro
+        if(leftEdge>= rightEdge){
+            return;
+        }
+
+        // Separación
+        int i=leftEdge;
+        int j=rightEdge;
+
+        while(i<j){
+            while(i<j && data[i]->getId() <= data[rightEdge]->getId()){
+                i++;
+            }
+            while(i<j && data[j]->getId() >= data[rightEdge]->getId()){
+                j--;
+            }
+            if(i != j){
+                std::swap(data[i],data[j]);
+            }
+        }
+
+        if(i != rightEdge){
+            std::swap(data[i],data[rightEdge]);
+        }
+
+        // Llamadas recursivas
+        sortDataQuick(leftEdge, i-1,data);
+        sortDataQuick(i+1, rightEdge,data);
+    }
     // Método para obtener los hijos del nodo como un arreglo
-    const arreglo_lista<FileNode*>& getChildren() const { return children; }
+    arreglo_lista<FileNode*>& getChildren() { return children; }
 
     // Método para obtener los hijos del nodo como una pila
     const pila<FileNode*>& getChildrenPila() const { return children_pila; }
@@ -90,6 +124,26 @@ public:
         return nullptr; // Devolver nulo si el nodo no se encuentra
     }
 
+    FileNode* dfs(int id){
+        if(this->getId() == id){
+            return this;
+        }
+        for(int i = 0; i < children.size(); i++){
+            
+            if(children[i]->getType() == NodeType::Directory){
+                FileNode* ans = children[i]->dfs(id);
+                if(ans != nullptr){
+                    return ans;
+                }
+
+                if(children[i]->getId() == id){
+                    return children[i];
+                }   
+            }
+        }
+        return nullptr;
+    }
+
     // Método para establecer el contenido del nodo (solo válido si el nodo es un archivo)
     void setContent(std::string newContent) {
         content = newContent;
@@ -109,7 +163,7 @@ public:
         if (children[medio]->getId() == id_a_encontrar) {
             return children[medio];
         }
-        else if (children[medio]->getId() > id) {
+        else if (children[medio]->getId() > id_a_encontrar) {
             return busquedaBinariaChildrenId(children, id_a_encontrar, abajo, medio - 1);
         }
         else {
@@ -164,6 +218,11 @@ public:
         currentDirectory = toReach ;
     }
 
+    // Método para establecer el nodo que representa el directorio actual
+    void setCurrentDirectoryInAll(FileNode* node){
+        currentDirectory = node;
+    }
+
     // Método para moverse al directorio padre
     void goToParentDirectory() {
         if (currentDirectory->getParent() != nullptr) {
@@ -178,9 +237,25 @@ public:
         return root->dfs(name);
     }
 
+    // Método para buscar un nodo por su ID en todos los directorios
+    FileNode* findNodeInAll(int id){
+        return root->dfs(id);
+    }
+
     // Método para buscar un nodo por su nombre en el directorio actual
     FileNode* findNode(std::string name) {
         return currentDirectory->dfs(name);
+    }
+
+    // Método para buscar un nodo por su ID en el directorio actual
+    FileNode* findNode(int id){
+        return currentDirectory->dfs(id);
+    }
+
+    // Método para buscar un nodo por su ID en el directorio actual
+    FileNode* findNodeById(int id) {
+        currentDirectory->sortDataQuick(0, currentDirectory->getChildren().size() - 1, currentDirectory->getChildren());
+        return currentDirectory->busquedaBinariaChildrenId(currentDirectory->getChildren(), id, 0, currentDirectory->getChildren().size() - 1);
     }
 
     // Método para crear un nuevo archivo en el directorio actual
@@ -216,6 +291,8 @@ public:
         }
         return "noSeEncontro";
     }
+
+    
 
     // Método para obtener y mostrar todos los archivos y directorios en el directorio actual
     void getAll() {
@@ -340,6 +417,34 @@ public:
 
     }
 
+    // Método para obtener y mostrar todos los archivos y directorios en el directorio actual, ordenados por nombre
+    void getAllByName(){
+        currentDirectory->sortChildrenByName();
+        arreglo_lista<FileNode*> children = currentDirectory->getChildren(); // Obtener los hijos del directorio actual
+        for(int i = 0 ; i < children.size(); i++){
+            if(children[i]->getType() == NodeType::File){
+                std::cout << "[File] " << children[i]->getName() << std::endl;
+            }else{
+                std::cout << "[Directory] " << children[i]->getName() << std::endl;
+            }
+        }
+    }
+
+
+    // Método para obtener y mostrar todos los archivos y directorios en el directorio actual, ordenados por ID
+    void getAllById(){
+        currentDirectory->sortDataQuick(0, currentDirectory->getChildren().size() - 1, currentDirectory->getChildren());
+        arreglo_lista<FileNode*> children = currentDirectory->getChildren(); // Obtener los hijos del directorio actual
+        for(int i = 0 ; i < children.size(); i++){
+            if(children[i]->getType() == NodeType::File){
+                std::cout << children[i]->getId() <<" [File] " << children[i]->getName() << std::endl;
+            }else{
+                std::cout << children[i]->getId() << " [Directory] " << children[i]->getName() << std::endl;
+            }
+        }
+    }
+
+
     // Método para eliminar un nodo del directorio actual por su nombre
     bool deleteNode(std::string name) {
         if (currentDirectory->deleteChild(name)) {
@@ -349,37 +454,8 @@ public:
         }
     }
 
-    // Método para ordenar los nodos del directorio actual por su ID utilizando el algoritmo QuickSort
-    void sortDataQuick(const int& leftEdge, const int& rightEdge, arreglo_lista<FileNode*>&data){
-        // Criterio de paro
-        if(leftEdge>= rightEdge){
-            return;
-        }
 
-        // Separación
-        int i=leftEdge;
-        int j=rightEdge;
-
-        while(i<j){
-            while(i<j && data[i]->getId() <= data[rightEdge]->getId()){
-                i++;
-            }
-            while(i<j && data[j]->getId() >= data[rightEdge]->getId()){
-                j--;
-            }
-            if(i != j){
-                std::swap(data[i],data[j]);
-            }
-        }
-
-        if(i != rightEdge){
-            std::swap(data[i],data[rightEdge]);
-        }
-
-        // Llamadas recursivas
-        sortDataQuick(leftEdge, i-1,data);
-        sortDataQuick(i+1, rightEdge,data);
-    }
+    
 };
 
 #endif /* DIRECTORY_H */

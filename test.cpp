@@ -52,11 +52,11 @@ using namespace std;
     cout << "HIJOS CHILDREN ANTES DE ORDENAR" << endl;
     arreglo_lista<FileNode *> children = dir.getRoot()->getChildren();
 
-    // Generar IDs aleatorios para cada nodo
-    srand(time(nullptr)); // Inicializar la semilla para generar números aleatorios
-    for (FileNode* child : children) {
-        child->setId((rand() % 8) + 1); // Generar IDs aleatorios en el rango de 1 a 8
-    }
+    // // Generar IDs aleatorios para cada nodo
+    // srand(time(nullptr)); // Inicializar la semilla para generar números aleatorios
+    // for (FileNode* child : children) {
+    //     child->setId((rand() % 8) + 1); // Generar IDs aleatorios en el rango de 1 a 8
+    // }
 
     // Imprimir los IDs aleatorios de los nodos antes de ordenar
     for (FileNode* child : children) {

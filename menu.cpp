@@ -66,6 +66,7 @@ void printMenu(){
     cout << "* cd ..              -> Directorio anterior." << enl;
     cout << "* cd /               -> Directorio raiz." << enl;
     cout << "* ls                 -> Lista del Contenido." << enl;
+    cout << "* search             -> Buscar un archivo o directorio." << enl;
     cout << "* exit               -> Termina el Programa." << enl;
 
     // Muestra saltos de línea adicionales para mejorar la legibilidad
@@ -177,30 +178,46 @@ void menu(){
                 }
             } else if (vi_userAnswer[0] == "ls") {
                 // Logica para mostrar los directorios y archivos
-                string option;
-                cout << "Opcion 1: Mostrar por default\nOpcion 2: Mostrar de antiguo a nuevo\nOpcion 3: Mostrar de nuevo a antiguo\n" << enl;
-                cout << "Ingrese una opcion: ";
-                cin >> option;
-                cin.ignore();
-                if (option == "1") {
+                if(dir.getCurrentDirectory()->getChildren().size() == 0){
                     cls();
                     printMenu();
-                    dir.getAll();
-                    cout << enl;
-                } else if (option == "2") {
-                    cls();
-                    printMenu();
-                    dir.getAllOldest();
-                    cout << enl;
-                } else if (option == "3") {
-                    cls();
-                    printMenu();
-                    dir.getAllLastest();
+                    cout << "Directorio vacio!" << enl;
                     cout << enl;
                 } else {
-                    cls();
-                    printMenu();
-                    cout << "Opcion no valida!" << enl;
+                    string option;
+                    cout << "Opcion 1: Mostrar por default\nOpcion 2: Mostrar de antiguo a nuevo\nOpcion 3: Mostrar de nuevo a antiguo\nOpcion 4: Ordenar por nombre\nOpcion 5: Ordenar por Id\n" << enl;
+                    cout << "Ingrese una opcion: ";
+                    cin >> option;
+                    cin.ignore();
+                    if (option == "1") {
+                        cls();
+                        printMenu();
+                        dir.getAll();
+                        cout << enl;
+                    } else if (option == "2") {
+                        cls();
+                        printMenu();
+                        dir.getAllOldest();
+                        cout << enl;
+                    } else if (option == "3") {
+                        cls();
+                        printMenu();
+                        dir.getAllLastest();
+                        cout << enl;
+                    } else if (option == "4") {
+                        cls();
+                        printMenu();
+                        dir.getAllByName();
+                        cout << enl;
+                    } else if (option == "5"){
+                        cls();
+                        printMenu();
+                        dir.getAllById();
+                    } else {
+                        cls();
+                        printMenu();
+                        cout << "Opcion no valida!" << enl;
+                    } 
                 }
             } else if (vi_userAnswer[0] == "nano") {
                 // Logica para Moverse de directorio.
@@ -225,7 +242,101 @@ void menu(){
                 } else {
                     cout << "Faltan parametros!" << enl;
                 }
-            } else {
+            } else if (vi_userAnswer[0] == "search"){ // Comando para buscar un archivo o directorio
+                string option;
+                cout << "\nOpcion 1: Buscar por nombre en todos los directorios\nOpcion 2: Buscar por id en todos los directorios\nOpcion 3: Buscar por nombre en el actual directorio\nOpcion 4: Buscar por id en el actual directorio\n" << enl;
+                cout << "Ingrese una opcion: ";
+                cin >> option;
+                cin.ignore();
+                if (option == "1") { // Comando para buscar un archivo o directorio por nombre en todos los directorios
+                    string name;
+                    cout << "Ingrese el nombre a buscar: ";
+                    getline(cin, name);
+                    cls();
+                    printMenu();
+                    FileNode* ans = dir.findNodeInAll(name);
+                    if (ans == nullptr) {
+                        cout << "No se encontro el archivo o directorio!" << enl;
+                    } else if(ans->getType() == NodeType::Directory){
+                        dir.setCurrentDirectoryInAll(ans);
+                        cout << "Directorio encontrado: " << ans->getName() << enl;
+                    } else if (ans->getType() == NodeType::File){
+                        dir.setCurrentDirectoryInAll(ans->getParent());
+                        cout << "Archivo encontrado: " << ans->getName() << enl;
+                        cout << "Directorio actual: " << dir.getCurrentDirectory()->getName() << ", que contiene a: " << ans->getName() << enl;
+
+                    }
+
+                    cout << enl;
+                } else if (option == "2") {    // Comando para buscar un archivo o directorio por ID en todos los directorios
+                    int id;
+                    cout << "Ingrese el id a buscar: ";
+                    cin >> id;
+                    cin.ignore();
+                    cls();
+                    printMenu();
+                    FileNode* ans = dir.findNodeInAll(id);
+                    if (ans == nullptr) {
+                        cout << "No se encontro el archivo o directorio!" << enl;
+                    } else if(ans->getType() == NodeType::Directory){
+                        dir.setCurrentDirectoryInAll(ans);
+                        cout << "Directorio encontrado: " << ans->getName() << enl;
+                    } else if (ans->getType() == NodeType::File){
+                        dir.setCurrentDirectoryInAll(ans->getParent());
+                        cout << "Archivo encontrado: " << ans->getName() << enl;
+                        cout << "Directorio actual: " << dir.getCurrentDirectory()->getName() << ", que contiene a: " << ans->getName() << enl;
+
+                    }
+                    cout << enl;
+                } else if (option == "3"){  // Comando para buscar un archivo o directorio por nombre en el directorio actual
+                    string name;
+                    cout << "Ingrese el nombre a buscar: ";
+                    getline(cin, name);
+                    cls();
+                    printMenu();
+                    FileNode* ans = dir.findNode(name);
+                    if (ans == nullptr) {
+                        cout << "No se encontro el archivo o directorio!" << enl;
+                    } else if(ans->getType() == NodeType::Directory){
+                        dir.setCurrentDirectoryInAll(ans);
+                        cout << "Directorio encontrado: " << ans->getName() << enl;
+                    } else if (ans->getType() == NodeType::File){
+                        dir.setCurrentDirectoryInAll(ans->getParent());
+                        cout << "Archivo encontrado: " << ans->getName() << enl;
+                        cout << "Directorio actual: " << dir.getCurrentDirectory()->getName() << ", que contiene a: " << ans->getName() << enl;
+
+                    }
+                    cout << enl;
+                } else if (option == "4"){ // Comando para buscar un archivo o directorio por ID en el directorio actual
+                    int id;
+                    cout << "Ingrese el id a buscar: ";
+                    cin >> id;
+                    cin.ignore();
+                    cls();
+                    printMenu();
+                    FileNode* ans = dir.findNodeById(id);
+                    if (ans == nullptr) {
+                        cout << "No se encontro el archivo o directorio!" << enl;
+                    } else if(ans->getType() == NodeType::Directory){
+                        dir.setCurrentDirectoryInAll(ans);
+                        cout << "Directorio encontrado: " << ans->getName() << enl;
+                    } else if (ans->getType() == NodeType::File){
+                        dir.setCurrentDirectoryInAll(ans->getParent());
+                        cout << "Archivo encontrado: " << ans->getName() << enl;
+                        cout << "Directorio actual: " << dir.getCurrentDirectory()->getName() << ", que contiene a: " << ans->getName() << enl;
+
+                    }
+                    cout << enl;
+                
+
+                } else {
+                    cls();
+                    printMenu();
+                    cout << "Opcion no valida!" << enl;
+                }
+            }
+            
+            else {
                 cls();
                 printMenu();
                 cout << "Comando Desconocido!" << enl;
