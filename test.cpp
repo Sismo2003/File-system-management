@@ -64,7 +64,7 @@ using namespace std;
     }
 
      // Ordenar la lista de hijos por Id
-    dir.sortDataQuick(0, children.size() -1, children);
+    node1->sortDataQuick(0, children.size() -1, children);
 
     cout << "HIJOS CHILDREN DESPUES DE ORDENAR" << endl;
     for (FileNode* child : children) {
