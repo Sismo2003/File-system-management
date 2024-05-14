@@ -5,6 +5,7 @@
 #include "arreglo.h"
 #include "pila.h"
 #include "cola.h"
+#include "avl_tree.h"
 
 enum class NodeType { File, Directory }; // Enumeración para representar el tipo de nodo: Archivo o Directorio
 static int idIncremental = 1; // Variable estática para mantener un ID incremental para los nodos
@@ -106,6 +107,23 @@ public:
         return false; // Devolver falso si el hijo no se encuentra
     }
 
+    // Método para eliminar un elemento de la pila
+    void deleteFromPila(FileNode* nodeToDelete) {
+        pila<FileNode*> tempPila; // Crear una pila temporal para almacenar los elementos de la pila original
+        while (!children_pila.vacia()) {
+            FileNode* topNode = children_pila.tope(); // Obtener el elemento superior de la pila original
+            children_pila.pop(); // Eliminar el elemento superior de la pila original
+            if (topNode != nodeToDelete) {
+                tempPila.push(topNode); // Agregar el elemento superior a la pila temporal si no es el nodo a eliminar
+            }
+        }
+        while (!tempPila.vacia()) {
+            FileNode* topNode = tempPila.tope(); // Obtener el elemento superior de la pila temporal
+            tempPila.pop(); // Eliminar el elemento superior de la pila temporal
+            children_pila.push(topNode); // Agregar el elemento superior a la pila original
+        }
+    }
+
     // Método para realizar una búsqueda en profundidad (DFS) de un nodo por su nombre
     FileNode* dfs(std::string name) {
         if (this->name == name) // Si el nombre coincide con el nodo actual, devolver este nodo
@@ -182,12 +200,14 @@ class Directory {
 private:
     FileNode* root; // Puntero al nodo raíz del directorio
     FileNode* currentDirectory; // Puntero al nodo que representa el directorio actual
+    AVL* arbol = nullptr;
 
 public:
     // Constructor: Crear un nuevo directorio con un nodo raíz predeterminado
     Directory() {
         root = new FileNode("root", NodeType::Directory);
         currentDirectory = root; // Al inicio, el directorio actual es el directorio raíz
+        arbol = new AVL(0);
     }
 
     // Destructor: Liberar la memoria asignada para el nodo raíz
@@ -258,16 +278,22 @@ public:
         return currentDirectory->busquedaBinariaChildrenId(currentDirectory->getChildren(), id, 0, currentDirectory->getChildren().size() - 1);
     }
 
+    bool searchInArbol(int id){
+        return arbol->search(id);
+    }
+
     // Método para crear un nuevo archivo en el directorio actual
     void createFile(std::string name) {
         FileNode* newNode = new FileNode(name, NodeType::File);
         currentDirectory->addChild(newNode);
+        arbol = arbol->insert(arbol, newNode->getId());
     }
 
     // Método para crear un nuevo directorio en el directorio actual
     void createDirectory(std::string name) {
         FileNode* newNode = new FileNode(name, NodeType::Directory);
         currentDirectory->addChild(newNode);
+        arbol = arbol->insert(arbol, newNode->getId());
     }
 
     // Método para establecer el contenido de un archivo en el directorio actual
@@ -447,11 +473,21 @@ public:
 
     // Método para eliminar un nodo del directorio actual por su nombre
     bool deleteNode(std::string name) {
+        
+        FileNode* nodeToDelete = currentDirectory->dfs(name); // Buscar el nodo a eliminar
+
         if (currentDirectory->deleteChild(name)) {
+            arbol = arbol->remove(arbol, nodeToDelete->getId());
             return true;
         } else {
             return false;
         }
+    }
+
+
+
+    void deleteInArbol(int id){
+        arbol = arbol->remove(arbol, id);
     }
 
 

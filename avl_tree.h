@@ -1,5 +1,5 @@
 //
-// Created by Alexis Ortiz ceceña on 09/05/24.
+// Created by Alexis Ortiz ceceña on 09/05/24 and fixed in totaly by Iker Yared Covarrubias Famoso.
 //
 
 #ifndef FILE_SYSTEM_MANAGEMENT_DATA_STRUCTURE_2024A_AVL_TREE_H
@@ -11,36 +11,30 @@
 
 
 
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
 
 class AVL
 {
 private:
     int key;         // Valor del nodo
-    AVL *left;       // Puntero al hijo izquierdo
-    AVL *right;      // Puntero al hijo derecho
+    AVL* root = nullptr;  // Puntero a la raíz del árbol
+    AVL* left;       // Puntero al hijo izquierdo
+    AVL* right;      // Puntero al hijo derecho
     int height;      // Altura del nodo en el árbol
 
+
+public:
     // Constructor
     AVL(int k) : key(k), left(nullptr), right(nullptr), height(1) {}
 
     // Métodos públicos
-
-    // Inserta un nodo en el árbol AVL
-    void insert(int key)
-    {
-        root = insert(root, key);
-    }
 
     // Realiza un recorrido en preorden del árbol
     void preOrder()
     {
         preOrder(root);
     }
-
-public:
-    AVL* root = nullptr;  // Puntero a la raíz del árbol
 
     // Métodos privados
 
@@ -86,6 +80,11 @@ public:
         return y;
     }
 
+
+    void insert(int key){
+        root = insert(this, key);
+    }
+
     // Inserta un nodo en el árbol AVL de forma recursiva
     AVL* insert(AVL* node, int key){
         if (node == nullptr)
@@ -123,6 +122,8 @@ public:
         return node;
     }
 
+    
+
     // Realiza un recorrido en preorden del árbol de forma recursiva
     void preOrder(AVL *root)
     {
@@ -133,6 +134,122 @@ public:
             preOrder(root->right);
         }
     }
+
+    // Realiza una búsqueda en profundidad (DFS) en el árbol para verificar si una clave está presente
+    bool search(int key) {
+        return search(this, key);
+    }
+
+    bool search(AVL* node, int key) {
+        if (node == nullptr)
+            return false;
+        if (key == node->key)
+            return true;
+        if (key < node->key)
+            return search(node->left, key);
+        else
+            return search(node->right, key);
+    }
+
+
+
+
+    void remove(int key){
+        root = remove(this, key);
+    }
+
+    AVL* remove(AVL* root, int key) {
+        if (root == nullptr)
+            return root;
+
+        // Si la clave a eliminar es menor que la clave del nodo actual,
+        // entonces debe estar en el subárbol izquierdo.
+        if (key < root->key)
+            root->left = remove(root->left, key);
+
+        // Si la clave a eliminar es mayor que la clave del nodo actual,
+        // entonces debe estar en el subárbol derecho.
+        else if (key > root->key)
+            root->right = remove(root->right, key);
+
+        // Si la clave a eliminar es igual a la clave del nodo actual, entonces
+        // este es el nodo que se eliminará.
+        else {
+            // Nodo con solo un hijo o sin hijos
+            if ((root->left == nullptr) || (root->right == nullptr)) {
+                AVL* temp = root->left ? root->left : root->right;
+
+                // Caso sin hijos
+                if (temp == nullptr) {
+                    temp = root;
+                    root = nullptr;
+                } else // Caso con un hijo
+                    *root = *temp; // Copia el contenido del hijo no nulo
+
+                delete temp;
+            } else {
+                // Nodo con dos hijos: obtener el sucesor in-order (menor valor en el subárbol derecho)
+                AVL* temp = minValueNode(root->right);
+
+                // Copia el sucesor in-order en el nodo actual
+                root->key = temp->key;
+
+                // Elimina el sucesor in-order
+                root->right = remove(root->right, temp->key);
+            }
+        }
+
+        // Si el árbol tenía solo un nodo, entonces no es necesario balancearlo
+        if (root == nullptr)
+            return root;
+
+        // Actualizar la altura del nodo actual
+        root->height = 1 + max(getHeight(root->left), getHeight(root->right));
+
+        // Obtener el factor de equilibrio del nodo actual para verificar si se ha desequilibrado
+        int balance = getBalance(root);
+
+        // Casos de desequilibrio:
+
+        // Izquierda izquierda
+        if (balance > 1 && getBalance(root->left) >= 0)
+            return rightRotate(root);
+
+        // Izquierda derecha
+        if (balance > 1 && getBalance(root->left) < 0) {
+            root->left = leftRotate(root->left);
+            return rightRotate(root);
+        }
+
+        // Derecha derecha
+        if (balance < -1 && getBalance(root->right) <= 0)
+            return leftRotate(root);
+
+        // Derecha izquierda
+        if (balance < -1 && getBalance(root->right) > 0) {
+            root->right = rightRotate(root->right);
+            return leftRotate(root);
+        }
+
+        return root;
+    }
+
+    // Método auxiliar para encontrar el nodo con el valor mínimo en un árbol
+    AVL* minValueNode(AVL* node) {
+        AVL* current = node;
+
+        // Recorre el árbol hasta encontrar el nodo más a la izquierda
+        while (current->left != nullptr)
+            current = current->left;
+
+        return current;
+    }
+
+
+
+    
+
+
 };
 
 

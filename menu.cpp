@@ -67,6 +67,7 @@ void printMenu(){
     cout << "* cd /               -> Directorio raiz." << enl;
     cout << "* ls                 -> Lista del Contenido." << enl;
     cout << "* search             -> Buscar un archivo o directorio." << enl;
+    cout << "* check + (Id)       -> Verificar si un Id existe." << enl;
     cout << "* exit               -> Termina el Programa." << enl;
 
     // Muestra saltos de línea adicionales para mejorar la legibilidad
@@ -334,9 +335,20 @@ void menu(){
                     printMenu();
                     cout << "Opcion no valida!" << enl;
                 }
-            }
-            
-            else {
+            } else if(vi_userAnswer[0] == "check"){
+                if (vi_userAnswer.size() == 2) {
+                    int id = stoi(vi_userAnswer[1]);
+                    cls();
+                    printMenu();
+                    if (dir.searchInArbol(id)) {
+                        cout << "El Id existe!" << enl;
+                    } else {
+                        cout << "El Id no existe!" << enl;
+                    }
+                } else {
+                    cout << "Faltan parametros!" << enl;
+                }
+            } else {
                 cls();
                 printMenu();
                 cout << "Comando Desconocido!" << enl;
