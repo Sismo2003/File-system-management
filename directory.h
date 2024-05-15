@@ -124,6 +124,22 @@ public:
         }
     }
 
+    void deleteFromCola(FileNode* nodeToDelete) {
+        cola<FileNode*> tempCola; // Crear una cola temporal para almacenar los elementos de la cola original
+        while (!children_cola.vacia()) {
+            FileNode* frontNode = children_cola.frente_cola(); // Obtener el elemento frontal de la cola original
+            children_cola.desencolar(); // Eliminar el elemento frontal de la cola original
+            if (frontNode != nodeToDelete) {
+                tempCola.encolar(frontNode); // Agregar el elemento frontal a la cola temporal si no es el nodo a eliminar
+            }
+        }
+        while (!tempCola.vacia()) {
+            FileNode* frontNode = tempCola.frente_cola(); // Obtener el elemento frontal de la cola temporal
+            tempCola.desencolar(); // Eliminar el elemento frontal de la cola temporal
+            children_cola.encolar(frontNode); // Agregar el elemento frontal a la cola original
+        }
+    }
+
     // Método para realizar una búsqueda en profundidad (DFS) de un nodo por su nombre
     FileNode* dfs(std::string name) {
         if (this->name == name) // Si el nombre coincide con el nodo actual, devolver este nodo
@@ -478,6 +494,8 @@ public:
 
         if (currentDirectory->deleteChild(name)) {
             arbol = arbol->remove(arbol, nodeToDelete->getId());
+            currentDirectory->deleteFromPila(nodeToDelete);
+            currentDirectory->deleteFromCola(nodeToDelete);
             return true;
         } else {
             return false;
