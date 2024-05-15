@@ -11,7 +11,7 @@ enum class NodeType { File, Directory }; // Enumeración para representar el tip
 static int idIncremental = 1; // Variable estática para mantener un ID incremental para los nodos
 
 class FileNode {
-private: 
+private:
     int id; // ID del nodo
     std::string name; // Nombre del nodo
     NodeType type; // Tipo del nodo (Archivo o Directorio)
@@ -41,35 +41,40 @@ public:
         });
     }
 
-    void sortDataQuick(const int& leftEdge, const int& rightEdge, arreglo_lista<FileNode*>&data){
-        // Criterio de paro
-        if(leftEdge>= rightEdge){
+    void sortDataQuick(const int& leftEdge, const int& rightEdge, arreglo_lista<FileNode*>& data){
+        // Criterio de paro: si el límite izquierdo es mayor o igual al límite derecho, no hay elementos o solo uno en el subarreglo, por lo que no se hace nada
+        if(leftEdge >= rightEdge){
             return;
         }
 
-        // Separación
-        int i=leftEdge;
-        int j=rightEdge;
+        // Separación del subarreglo en torno a un pivote
+        int i = leftEdge; // Índice para el límite izquierdo del subarreglo
+        int j = rightEdge; // Índice para el límite derecho del subarreglo
 
-        while(i<j){
-            while(i<j && data[i]->getId() <= data[rightEdge]->getId()){
+        // Bucle para mover los elementos menores que el pivote a la izquierda y los mayores a la derecha
+        while(i < j){
+            // Búsqueda del primer elemento mayor que el pivote desde la izquierda
+            while(i < j && data[i]->getId() <= data[rightEdge]->getId()){
                 i++;
             }
-            while(i<j && data[j]->getId() >= data[rightEdge]->getId()){
+            // Búsqueda del primer elemento menor que el pivote desde la derecha
+            while(i < j && data[j]->getId() >= data[rightEdge]->getId()){
                 j--;
             }
+            // Intercambio de los elementos encontrados si no se han cruzado
             if(i != j){
-                std::swap(data[i],data[j]);
+                std::swap(data[i], data[j]);
             }
         }
 
+        // Colocación del pivote en su posición final después de la partición
         if(i != rightEdge){
-            std::swap(data[i],data[rightEdge]);
+            std::swap(data[i], data[rightEdge]);
         }
 
-        // Llamadas recursivas
-        sortDataQuick(leftEdge, i-1,data);
-        sortDataQuick(i+1, rightEdge,data);
+        // Llamadas recursivas para ordenar los subarreglos izquierdo y derecho
+        sortDataQuick(leftEdge, i - 1, data); // Ordenar el subarreglo izquierdo
+        sortDataQuick(i + 1, rightEdge, data); // Ordenar el subarreglo derecho
     }
     // Método para obtener los hijos del nodo como un arreglo
     arreglo_lista<FileNode*>& getChildren() { return children; }
@@ -158,23 +163,30 @@ public:
         return nullptr; // Devolver nulo si el nodo no se encuentra
     }
 
+    // Método de búsqueda en profundidad (DFS) para encontrar un nodo por su ID
     FileNode* dfs(int id){
+        // Verificar si el ID del nodo actual coincide con el ID buscado
         if(this->getId() == id){
-            return this;
+            return this; // Devolver el nodo actual si el ID coincide
         }
+
+        // Iterar a través de los hijos del nodo actual
         for(int i = 0; i < children.size(); i++){
-            
+            // Si el hijo actual es un directorio, realizar una búsqueda en profundidad en él
             if(children[i]->getType() == NodeType::Directory){
-                FileNode* ans = children[i]->dfs(id);
+                FileNode* ans = children[i]->dfs(id); // Llamada recursiva a dfs en el hijo actual
+                // Si se encuentra el nodo con el ID buscado, devolverlo
                 if(ans != nullptr){
                     return ans;
                 }
 
+                // Si el hijo actual es el nodo con el ID buscado, devolverlo
                 if(children[i]->getId() == id){
                     return children[i];
-                }   
+                }
             }
         }
+        // Si no se encuentra el nodo con el ID buscado en este nodo o en sus descendientes, devolver nullptr
         return nullptr;
     }
 
@@ -190,26 +202,33 @@ public:
 
     // Método para realizar una búsqueda binaria de un nodo por su ID en el arreglo de nodos hijos
     FileNode* busquedaBinariaChildrenId(arreglo_lista<FileNode*>& children, int id_a_encontrar, int abajo, int arriba) {
+        // Verificar si el índice inferior es mayor que el índice superior
         if (abajo > arriba) {
-            return nullptr;
+            return nullptr; // Si es así, el elemento no está presente en el arreglo y se devuelve nullptr
         }
+        // Calcular el índice medio
         int medio = abajo + (arriba - abajo) / 2;
+        // Verificar si el ID del nodo en el índice medio coincide con el ID buscado
         if (children[medio]->getId() == id_a_encontrar) {
-            return children[medio];
+            return children[medio]; // Si coincide, devolver el nodo en el índice medio
         }
         else if (children[medio]->getId() > id_a_encontrar) {
+            // Si el ID del nodo en el índice medio es mayor que el ID buscado, realizar la búsqueda en la mitad izquierda del arreglo
             return busquedaBinariaChildrenId(children, id_a_encontrar, abajo, medio - 1);
         }
         else {
+            // Si el ID del nodo en el índice medio es menor que el ID buscado, realizar la búsqueda en la mitad derecha del arreglo
             return busquedaBinariaChildrenId(children, id_a_encontrar, medio + 1, arriba);
         }
     }
 
     // Destructor: Liberar la memoria asignada para los nodos hijos
     ~FileNode() {
+        // Iterar sobre los nodos hijos y liberar la memoria asignada a cada uno de ellos
         for (int i = 0; i < children.size(); i++)
             delete children[i];
     }
+
 };
 
 class Directory {
@@ -290,33 +309,48 @@ public:
 
     // Método para buscar un nodo por su ID en el directorio actual
     FileNode* findNodeById(int id) {
+        // Ordenar los nodos hijos del directorio actual por su ID usando el algoritmo de ordenación rápida (QuickSort)
         currentDirectory->sortDataQuick(0, currentDirectory->getChildren().size() - 1, currentDirectory->getChildren());
+        // Realizar una búsqueda binaria del nodo por su ID en el arreglo ordenado de nodos hijos del directorio actual
         return currentDirectory->busquedaBinariaChildrenId(currentDirectory->getChildren(), id, 0, currentDirectory->getChildren().size() - 1);
     }
 
+    // Método para buscar un ID en el árbol AVL
     bool searchInArbol(int id){
+        // Realizar una búsqueda del ID en el árbol AVL
         return arbol->search(id);
     }
 
+
     // Método para crear un nuevo archivo en el directorio actual
     void createFile(std::string name) {
+        // Crear un nuevo nodo de archivo con el nombre especificado
         FileNode* newNode = new FileNode(name, NodeType::File);
+        // Agregar el nuevo nodo al directorio actual
         currentDirectory->addChild(newNode);
+        // Insertar el nuevo nodo en el árbol AVL
         arbol = arbol->insert(arbol, newNode->getId());
     }
 
     // Método para crear un nuevo directorio en el directorio actual
     void createDirectory(std::string name) {
+        // Crear un nuevo nodo de directorio con el nombre especificado
         FileNode* newNode = new FileNode(name, NodeType::Directory);
+        // Agregar el nuevo nodo al directorio actual
         currentDirectory->addChild(newNode);
+        // Insertar el nuevo nodo en el árbol AVL
         arbol = arbol->insert(arbol, newNode->getId());
     }
 
     // Método para establecer el contenido de un archivo en el directorio actual
     void setContent(std::string fileName, std::string newContent) {
+        // Obtener la lista de hijos del directorio actual
         arreglo_lista<FileNode*> children = currentDirectory->getChildren();
+        // Iterar sobre los hijos para encontrar el archivo con el nombre especificado
         for (int i = 0; i < children.size(); i++) {
+            // Verificar si el hijo actual es un archivo con el nombre especificado
             if(children[i]->getName() == fileName && children[i]->getType() == NodeType::File){
+                // Establecer el nuevo contenido para el archivo
                 children[i]->setContent(newContent);
                 return;
             }
@@ -325,16 +359,19 @@ public:
 
     // Método para obtener el contenido de un archivo en el directorio actual
     std::string getContent(std::string fileName) {
+        // Obtener la lista de hijos del directorio actual
         arreglo_lista<FileNode*> children = currentDirectory->getChildren();
+        // Iterar sobre los hijos para encontrar el archivo con el nombre especificado
         for (int i = 0; i < children.size(); i++) {
+            // Verificar si el hijo actual es un archivo con el nombre especificado
             if(children[i]->getName() == fileName && children[i]->getType() == NodeType::File){
+                // Devolver el contenido del archivo encontrado
                 return children[i]->getContent();
             }
         }
+        // Devolver un mensaje indicando que el archivo no se encontró
         return "noSeEncontro";
     }
-
-    
 
     // Método para obtener y mostrar todos los archivos y directorios en el directorio actual
     void getAll() {
@@ -475,13 +512,16 @@ public:
 
     // Método para obtener y mostrar todos los archivos y directorios en el directorio actual, ordenados por ID
     void getAllById(){
+        // Ordenar los nodos hijos del directorio actual por su ID utilizando el algoritmo de ordenación rápida (QuickSort)
         currentDirectory->sortDataQuick(0, currentDirectory->getChildren().size() - 1, currentDirectory->getChildren());
-        arreglo_lista<FileNode*> children = currentDirectory->getChildren(); // Obtener los hijos del directorio actual
+        // Obtener los hijos del directorio actual
+        arreglo_lista<FileNode*> children = currentDirectory->getChildren();
+        // Iterar sobre los hijos y mostrar su ID, tipo (archivo o directorio) y nombre
         for(int i = 0 ; i < children.size(); i++){
             if(children[i]->getType() == NodeType::File){
-                std::cout << children[i]->getId() <<" [File] " << children[i]->getName() << std::endl;
+                std::cout << children[i]->getId() <<" [File] " << children[i]->getName() << std::endl; // Mostrar información del archivo
             }else{
-                std::cout << children[i]->getId() << " [Directory] " << children[i]->getName() << std::endl;
+                std::cout << children[i]->getId() << " [Directory] " << children[i]->getName() << std::endl; // Mostrar información del directorio
             }
         }
     }
@@ -489,27 +529,26 @@ public:
 
     // Método para eliminar un nodo del directorio actual por su nombre
     bool deleteNode(std::string name) {
-        
-        FileNode* nodeToDelete = currentDirectory->dfs(name); // Buscar el nodo a eliminar
+        // Buscar el nodo a eliminar por su nombre en el directorio actual utilizando búsqueda en profundidad (DFS)
+        FileNode* nodeToDelete = currentDirectory->dfs(name);
 
+        // Verificar si el nodo se eliminó con éxito del directorio actual
         if (currentDirectory->deleteChild(name)) {
-            arbol = arbol->remove(arbol, nodeToDelete->getId());
-            currentDirectory->deleteFromPila(nodeToDelete);
-            currentDirectory->deleteFromCola(nodeToDelete);
-            return true;
+            // Si se eliminó con éxito, también se elimina del árbol AVL y de las estructuras de datos adicionales
+            arbol = arbol->remove(arbol, nodeToDelete->getId()); // Eliminar el nodo del árbol AVL
+            currentDirectory->deleteFromPila(nodeToDelete); // Eliminar el nodo de la pila
+            currentDirectory->deleteFromCola(nodeToDelete); // Eliminar el nodo de la cola
+            return true; // Devolver true para indicar que el nodo se eliminó con éxito
         } else {
-            return false;
+            return false; // Devolver false si no se pudo eliminar el nodo (por ejemplo, si no se encontró)
         }
     }
 
-
-
+    // Método para eliminar un nodo del árbol AVL por su ID
     void deleteInArbol(int id){
-        arbol = arbol->remove(arbol, id);
+        arbol = arbol->remove(arbol, id); // Eliminar el nodo del árbol AVL
     }
 
-
-    
 };
 
 #endif /* DIRECTORY_H */

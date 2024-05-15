@@ -5,15 +5,11 @@
 #ifndef FILE_SYSTEM_MANAGEMENT_DATA_STRUCTURE_2024A_AVL_TREE_H
 #define FILE_SYSTEM_MANAGEMENT_DATA_STRUCTURE_2024A_AVL_TREE_H
 
-
-
-// AVL tree implementation in C++
-
-
-
+// Inclusión de bibliotecas estándar de C++
 #include <bits/stdc++.h>
 using namespace std;
 
+// Definición de la clase AVL (árbol AVL)
 class AVL
 {
 private:
@@ -22,7 +18,6 @@ private:
     AVL* left;       // Puntero al hijo izquierdo
     AVL* right;      // Puntero al hijo derecho
     int height;      // Altura del nodo en el árbol
-
 
 public:
     // Constructor
@@ -80,7 +75,7 @@ public:
         return y;
     }
 
-
+    // Inserta un nodo en el árbol AVL
     void insert(int key){
         root = insert(this, key);
     }
@@ -122,8 +117,6 @@ public:
         return node;
     }
 
-    
-
     // Realiza un recorrido en preorden del árbol de forma recursiva
     void preOrder(AVL *root)
     {
@@ -140,6 +133,7 @@ public:
         return search(this, key);
     }
 
+    // Realiza una búsqueda en profundidad (DFS) en el árbol de forma recursiva
     bool search(AVL* node, int key) {
         if (node == nullptr)
             return false;
@@ -151,13 +145,12 @@ public:
             return search(node->right, key);
     }
 
-
-
-
+    // Elimina un nodo del árbol AVL
     void remove(int key){
         root = remove(this, key);
     }
 
+    // Elimina un nodo del árbol AVL de forma recursiva
     AVL* remove(AVL* root, int key) {
         if (root == nullptr)
             return root;
@@ -244,15 +237,6 @@ public:
 
         return current;
     }
-
-
-
-    
-
-
 };
-
-
-
 
 #endif //FILE_SYSTEM_MANAGEMENT_DATA_STRUCTURE_2024A_AVL_TREE_H
